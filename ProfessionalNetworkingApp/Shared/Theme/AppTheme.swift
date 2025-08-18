@@ -63,37 +63,37 @@ public enum AppTheme {
         public let divider: Color        // strokes / separators
     }
 
-    // Light (optimized for accessibility)
+    // MARK: - Light Palette
     public static let light = Palette(
-        primary:       Color(hex: "#1A365D"),
-        primaryAlt:    Color(hex: "#2B6CB0"),
-        secondary:     Color(hex: "#FFFFFF"),
-        success:       Color(hex: "#38A169"),
-        alert:         Color(hex: "#E53E3E"),
-        warning:       Color(hex: "#D69E2E"),
-        info:          Color(hex: "#3182CE"),
-        textPrimary:   Color(hex: "#2D3748"),
-        textSecondary: Color(hex: "#718096"),
-        bg:            Color(hex: "#F7FAFC"),
-        bgAlt:         Color(hex: "#EDF2F7"),
-        card:          Color.white,
+        primary:       Color(hex: "#2563EB"), // Vibrant blue
+        primaryAlt:    Color(hex: "#1D4ED8"), // Darker variant
+        secondary:     Color(hex: "#06B6D4"), // Teal accent
+        success:       Color(hex: "#22C55E"), // Softer green
+        alert:         Color(hex: "#EF4444"), // Clean red
+        warning:       Color(hex: "#F59E0B"), // Amber / gold
+        info:          Color(hex: "#3B82F6"), // Friendly info blue
+        textPrimary:   Color(hex: "#111827"), // Near-black gray
+        textSecondary: Color(hex: "#6B7280"), // Muted gray
+        bg:            Color(hex: "#F9FAFB"), // Light background
+        bgAlt:         Color(hex: "#F3F4F6"), // Slightly darker alt
+        card:          Color.white,           // Cards stay white
         divider:       Color.black.opacity(0.08)
     )
 
-    // Dark (harmonized)
+    // MARK: - Dark Palette
     public static let dark = Palette(
-        primary:       Color(hex: "#3182CE"),
-        primaryAlt:    Color(hex: "#2B6CB0"),
-        secondary:     Color(hex: "#FFFFFF"),
-        success:       Color(hex: "#48BB78"),
-        alert:         Color(hex: "#FC8181"),
-        warning:       Color(hex: "#F6AD55"),
-        info:          Color(hex: "#63B3ED"),
-        textPrimary:   Color.white.opacity(0.92),
-        textSecondary: Color.white.opacity(0.72),
-        bg:            Color(hex: "#0E1623"),
-        bgAlt:         Color(hex: "#1A202C"),
-        card:          Color(hex: "#2D3748"),
+        primary:       Color(hex: "#3B82F6"), // Lighter blue for dark bg
+        primaryAlt:    Color(hex: "#2563EB"), // Base blue accent
+        secondary:     Color(hex: "#06B6D4"), // Teal still works well
+        success:       Color(hex: "#22C55E"), // Same green (accessible)
+        alert:         Color(hex: "#F87171"), // Softer red in dark mode
+        warning:       Color(hex: "#FBBF24"), // Lighter amber for dark mode
+        info:          Color(hex: "#60A5FA"), // Brighter info blue
+        textPrimary:   Color.white.opacity(0.92), // Strong readable white
+        textSecondary: Color.white.opacity(0.72), // Muted gray-white
+        bg:            Color(hex: "#0F172A"),     // Deep navy/charcoal
+        bgAlt:         Color(hex: "#1E293B"),     // Slightly lighter alt
+        card:          Color(hex: "#111827"),     // Dark card
         divider:       Color.white.opacity(0.12)
     )
 
