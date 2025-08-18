@@ -15,9 +15,9 @@ struct OnboardingDataModel {
 extension OnboardingDataModel {
     static var compactData: [OnboardingDataModel] = [
         OnboardingDataModel(
-            lottieFile: "network_connections_minimal",
-            heading: "Connect Professionally",
-            text: "Build verified business relationships with professionals in your field."
+            lottieFile: "career_growth_animation",
+            heading: "Grow Your Career",
+            text: "Access opportunities, mentorship, and resources tailored to your professional journey."
         ),
         OnboardingDataModel(
             lottieFile: "smart_matching_simple",
