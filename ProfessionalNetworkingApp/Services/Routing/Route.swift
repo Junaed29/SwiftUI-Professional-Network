@@ -14,8 +14,9 @@ import Foundation
 enum Route: Hashable {
     // Auth
     case welcome
- //   case login
- //   case otpVerification(phone: String)
+    case phoneLogin
+    case oAuthLogin
+    case otpVerification(phone: String)
 
     // Main
     case dashboard

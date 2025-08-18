@@ -38,6 +38,12 @@ struct NavigationContainer<Root: View>: View {
             WelcomeView()
         case .dashboard:
             HomeView()
+        case .phoneLogin:
+            PhoneLoginView()
+        case .oAuthLogin:
+            OAuthLoginView()
+        case .otpVerification(phone: let phone):
+            OTPVerificationView(phoneDisplay: phone)
         }
     }
 }
