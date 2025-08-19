@@ -1,4 +1,11 @@
-// Core/Profile/ViewModels/ProfileViewModel.swift
+//
+//  ProfileViewModel.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import SwiftUI
 
 @Observable
@@ -13,7 +20,7 @@ final class ProfileViewModel {
         defer { isLoading = false }
 
         // TODO: replace with real API; this is just sample data
-        await Task.sleep(NSEC_PER_MSEC * 300)
+        try? await Task.sleep(for: .seconds(1))
 
         profile = UserProfile(
             fullName: "Herman West",

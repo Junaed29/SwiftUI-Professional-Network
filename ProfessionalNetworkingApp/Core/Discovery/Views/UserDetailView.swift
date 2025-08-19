@@ -222,18 +222,6 @@ private struct FlexibleChips: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
-    private func chip(_ title: String) -> some View {
-        Text(title)
-            .font(.caption.weight(.semibold))
-            .foregroundColor(p.textPrimary)
-            .padding(.horizontal, AppTheme.Space.md)
-            .padding(.vertical, AppTheme.Space.xs)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.Radius.md)
-                    .stroke(p.divider, lineWidth: 1)
-            )
-    }
 }
 
 // Preference keys for measuring text heights

@@ -1,13 +1,20 @@
-// Core/Profile/Views/ProfileDetailView.swift
+//
+//  ProfileDetailView.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import SwiftUI
 
 struct ProfileDetailView: View {
     // For “other user” profile we usually load by id
     let userID: String
 
-    @Environment(\.appPalette) private var p  // if you use AppTheme; remove if not
+    @Environment(\.appPalette) private var p
     @State private var vm = ProfileViewModel()
-    @State private var showFullBio = false
+
 
     var body: some View {
         ScrollView {
@@ -22,18 +29,7 @@ struct ProfileDetailView: View {
 
                 // About
                 section(title: "About") {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(vm.profile.bio)
-                            .foregroundColor(p.textPrimary)
-                            .lineLimit(showFullBio ? nil : 3)
-                        if vm.profile.bio.count > 120 {
-                            Button(showFullBio ? "Show less" : "Show more") {
-                                withAnimation(.easeInOut) { showFullBio.toggle() }
-                            }
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(p.primary)
-                        }
-                    }
+                    aboutSection
                 }
 
                 // Friends row
@@ -56,14 +52,14 @@ struct ProfileDetailView: View {
                 // Interests
                 if !vm.profile.interests.isEmpty {
                     section(title: "Interests") {
-                        FlowChips(vm.profile.interests, color: p.textSecondary.opacity(0.18), textColor: p.textPrimary)
+                        wrapChips(vm.profile.interests)
                     }
                 }
 
                 // Looking for
                 if !vm.profile.lookingFor.isEmpty {
                     section(title: "Looking for") {
-                        FlowChips(vm.profile.lookingFor, color: p.primary.opacity(0.16), textColor: p.textPrimary)
+                        wrapChips(vm.profile.lookingFor)
                     }
                 }
 
@@ -130,6 +126,56 @@ struct ProfileDetailView: View {
         .padding(.bottom, -96)
     }
 
+    // MARK: - About Sections
+    // Measurement to detect truncation beyond 3 lines
+    @State private var fullBioHeight: CGFloat = 0
+    @State private var limitedBioHeight: CGFloat = 0
+    private let bioLineLimit: Int = 3
+    @State private var showMoreAbout = false
+
+    private var aboutSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
+            Text(vm.profile.bio)
+                .styled(.body, color: p.textSecondary)
+                .lineLimit(showMoreAbout ? nil : bioLineLimit)
+                .background(
+                    // Measure limited height (3 lines) using an invisible twin
+                    Text(vm.profile.bio)
+                        .styled(.body, color: p.textSecondary)
+                        .lineLimit(bioLineLimit)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { geo in
+                            Color.clear.preference(key: LimitedTextHeightKey.self, value: geo.size.height)
+                        })
+                        .hidden()
+                )
+                .overlay(
+                    // Measure full height (no limit) using another invisible twin
+                    Text(vm.profile.bio)
+                        .styled(.body, color: p.textSecondary)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { geo in
+                            Color.clear.preference(key: FullTextHeightKey.self, value: geo.size.height)
+                        })
+                        .hidden()
+                )
+                .onPreferenceChange(LimitedTextHeightKey.self) { limitedBioHeight = $0 }
+                .onPreferenceChange(FullTextHeightKey.self) { fullBioHeight = $0 }
+
+            if fullBioHeight > (limitedBioHeight + 1) { // show toggle only when truncated
+                Button(action: { withAnimation(.easeInOut) { showMoreAbout.toggle() } }) {
+                    Text(showMoreAbout ? "Show less" : "Show more")
+                        .styled(.caption, color: p.primary)
+                }
+            }
+        }
+    }
+
+    private func wrapChips(_ items: [String]) -> some View {
+        FlexibleChips(items: items)
+    }
+
     private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline).foregroundColor(p.textPrimary)
@@ -184,6 +230,21 @@ struct ProfileDetailView: View {
     }
 }
 
+// MARK: - Layout helper to wrap chips across lines
+private struct FlexibleChips: View {
+    @Environment(\.appPalette) private var p
+    let items: [String]
+
+    var body: some View {
+        FlowLayout(spacing: AppTheme.Space.sm, lineSpacing: AppTheme.Space.sm) {
+            ForEach(items, id: \.self) { title in
+                ChipView(text: title,outline: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 // MARK: - Header hero image with gradient
 private struct HeaderHero: View {
     @Environment(\.appPalette) private var p
@@ -191,14 +252,11 @@ private struct HeaderHero: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .empty: Rectangle().fill(p.card).frame(height: 360)
-                case .success(let img): img.resizable().scaledToFill().frame(height: 360).clipped()
-                case .failure: Rectangle().fill(p.card).frame(height: 360)
-                @unknown default: Rectangle().fill(p.card).frame(height: 360)
-                }
-            }
+            ImageLoader(
+                url: imageURL,
+                contentMode: .fill,
+                cornerRadius: 12
+            )
             LinearGradient(
                 colors: [Color.black.opacity(0.55), Color.black.opacity(0.0)],
                 startPoint: .bottom, endPoint: .top
@@ -210,6 +268,16 @@ private struct HeaderHero: View {
     }
 }
 
+// MARK: - Preference keys for measuring text heights
+private struct FullTextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+private struct LimitedTextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
 // MARK: - Friends avatars row
 private struct FriendsRow: View {
     @Environment(\.appPalette) private var p
@@ -218,11 +286,10 @@ private struct FriendsRow: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 14) {
                 ForEach(friends) { f in
-                    AsyncImage(url: f.avatarURL) { img in
-                        img.resizable().scaledToFill()
-                    } placeholder: {
-                        Circle().fill(p.card)
-                    }
+                    ImageLoader(
+                        url: f.avatarURL,
+                        contentMode: .fill,
+                    )
                     .frame(width: 44, height: 44)
                     .clipShape(Circle())
                     .overlay(Circle().stroke(p.divider))
@@ -271,52 +338,7 @@ private struct BasicsGrid: View {
     }
 }
 
-// MARK: - Flow chips
-private struct FlowChips: View {
-    let items: [String]
-    let color: Color
-    let textColor: Color
-    var body: some View {
-        FlexibleWrap(items, spacing: 8, runSpacing: 8) { text in
-            Text(text)
-                .font(.subheadline)
-                .padding(.horizontal, 12).padding(.vertical, 8)
-                .background(color)
-                .foregroundColor(textColor)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(color.opacity(0.35)))
-                .cornerRadius(10)
-        }
-    }
-}
 
-// MARK: - Simple wrap layout (works well for chips)
-private struct FlexibleWrap<Data: RandomAccessCollection, Content: View>: View where Data.Element: Hashable {
-    let data: Data
-    let spacing: CGFloat
-    let runSpacing: CGFloat
-    @ViewBuilder let content: (Data.Element) -> Content
-
-    init(_ data: Data, spacing: CGFloat, runSpacing: CGFloat, @ViewBuilder content: @escaping (Data.Element) -> Content) {
-        self.data = data; self.spacing = spacing; self.runSpacing = runSpacing; self.content = content
-    }
-
-    var body: some View {
-        var width = CGFloat.zero
-        var height = CGFloat.zero
-
-        return ZStack(alignment: .topLeading) {
-            ForEach(Array(data), id: \.self) { item in
-                content(item)
-                    .alignmentGuide(.leading) { d in
-                        if abs(width - d.width) > UIScreen.main.bounds.width - 32 {
-                            width = 0; height -= d.height + runSpacing
-                        }
-                        let result = width
-                        width -= d.width + spacing
-                        return result
-                    }
-                    .alignmentGuide(.top) { _ in height }
-            }
-        }
-    }
+#Preview {
+    ProfileDetailView(userID: "1")
 }
