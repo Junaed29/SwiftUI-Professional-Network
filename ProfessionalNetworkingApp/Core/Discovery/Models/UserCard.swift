@@ -1,4 +1,4 @@
-// SwipeModel.swift
+// UserCard.swift
 
 import Foundation
 

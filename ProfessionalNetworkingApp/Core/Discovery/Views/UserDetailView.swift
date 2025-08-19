@@ -6,6 +6,10 @@ struct UserDetailView: View {
     @Environment(\.appPalette) private var p
     let card: UserCard
     @State private var showMoreAbout = false
+    // Measurement to detect truncation beyond 3 lines
+    @State private var fullBioHeight: CGFloat = 0
+    @State private var limitedBioHeight: CGFloat = 0
+    private let bioLineLimit: Int = 3
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .solid) {
@@ -34,18 +38,11 @@ struct UserDetailView: View {
     private var hero: some View {
         Group {
             if let url = card.imageURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ZStack { p.bgAlt; ProgressView().tint(p.primary) }
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    case .failure:
-                        ZStack { p.bgAlt; Image(systemName: "person.fill").font(.largeTitle).foregroundColor(p.textSecondary) }
-                    @unknown default:
-                        Color.clear
-                    }
-                }
+                ImageLoader(
+                    url: url,
+                    contentMode: .fill,
+                    cornerRadius: 12
+                )
             } else {
                 ZStack { p.bgAlt; Image(systemName: "person.fill").font(.largeTitle).foregroundColor(p.textSecondary) }
             }
@@ -81,12 +78,40 @@ struct UserDetailView: View {
     private var aboutSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
             sectionTitle("About")
+            // Displayed bio
             Text(card.bio)
                 .styled(.body, color: p.textSecondary)
-                .lineLimit(showMoreAbout ? nil : 3)
-            Button(action: { withAnimation(.easeInOut) { showMoreAbout.toggle() } }) {
-                Text(showMoreAbout ? "Show less" : "Show more")
-                    .styled(.caption, color: p.primary)
+                .lineLimit(showMoreAbout ? nil : bioLineLimit)
+                .background(
+                    // Measure limited height (3 lines) using an invisible twin
+                    Text(card.bio)
+                        .styled(.body, color: p.textSecondary)
+                        .lineLimit(bioLineLimit)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { geo in
+                            Color.clear.preference(key: LimitedTextHeightKey.self, value: geo.size.height)
+                        })
+                        .hidden()
+                )
+                .overlay(
+                    // Measure full height (no limit) using another invisible twin
+                    Text(card.bio)
+                        .styled(.body, color: p.textSecondary)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { geo in
+                            Color.clear.preference(key: FullTextHeightKey.self, value: geo.size.height)
+                        })
+                        .hidden()
+                )
+                .onPreferenceChange(LimitedTextHeightKey.self) { limitedBioHeight = $0 }
+                .onPreferenceChange(FullTextHeightKey.self) { fullBioHeight = $0 }
+
+            if fullBioHeight > (limitedBioHeight + 1) { // show toggle only when truncated
+                Button(action: { withAnimation(.easeInOut) { showMoreAbout.toggle() } }) {
+                    Text(showMoreAbout ? "Show less" : "Show more")
+                        .styled(.caption, color: p.primary)
+                }
             }
         }
     }
@@ -97,14 +122,11 @@ struct UserDetailView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppTheme.Space.md) {
                     ForEach(Array(card.friends.enumerated()), id: \.offset) { _, url in
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty: Circle().fill(p.bgAlt).frame(width: 44, height: 44)
-                            case .success(let image): image.resizable().scaledToFill().frame(width: 44, height: 44).clipShape(Circle())
-                            case .failure: Circle().fill(p.bgAlt).overlay(Image(systemName: "person.fill").foregroundColor(p.textSecondary)).frame(width: 44, height: 44)
-                            @unknown default: EmptyView()
-                            }
-                        }
+                        ImageLoader(
+                            url: url,
+                            contentMode: .fill,
+                            cornerRadius: 12
+                        )
                     }
                 }
             }
@@ -193,25 +215,9 @@ private struct FlexibleChips: View {
     let items: [String]
 
     var body: some View {
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-        return ZStack(alignment: .topLeading) {
-            ForEach(items, id: \.self) { item in
-                chip(item)
-                    .alignmentGuide(.leading) { d in
-                        if (abs(width - d.width) > UIScreen.main.bounds.width - 48) {
-                            width = 0
-                            height -= d.height + AppTheme.Space.sm
-                        }
-                        let result = width
-                        if item == items.last { width = 0 } else { width -= d.width + AppTheme.Space.sm }
-                        return result
-                    }
-                    .alignmentGuide(.top) { _ in
-                        let result = height
-                        if item == items.last { height = 0 }
-                        return result
-                    }
+        FlowLayout(spacing: AppTheme.Space.sm, lineSpacing: AppTheme.Space.sm) {
+            ForEach(items, id: \.self) { title in
+                ChipView(text: title,outline: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -230,6 +236,16 @@ private struct FlexibleChips: View {
     }
 }
 
+// Preference keys for measuring text heights
+private struct FullTextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+private struct LimitedTextHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
 #Preview {
     UserDetailView(card: UserCard(
         name: "Ava",
@@ -238,12 +254,12 @@ private struct FlexibleChips: View {
         tag: "Engineer",
         imageURL: nil,
         photos: [],
-        bio: "Curious builder who enjoys books and brunch.",
+        bio: "Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch.",
         heightCM: 168,
         weightKG: 58,
         relationshipStatus: "Single",
         ethnicity: "Asian",
-        interests: ["Reading", "Music", "Hiking"],
+        interests: ["Reading", "Music", "Hiking","Readifng", "Musifc", "Hifking","Readfing", "Mussic", "Hiking","Reading", "Msusic", "Hiking"],
         lookingFor: ["Friend", "Dating"],
         friends: []
     ))

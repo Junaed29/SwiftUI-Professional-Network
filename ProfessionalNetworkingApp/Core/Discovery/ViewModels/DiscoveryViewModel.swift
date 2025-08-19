@@ -1,9 +1,11 @@
 // DiscoveryViewModel.swift
 
-import Foundation
+import SwiftUI
+import Observation
 
+@Observable
 final class DiscoveryViewModel: ObservableObject {
-    @Published var cards: [UserCard] = DiscoveryViewModel.sampleCards()
+    var cards: [UserCard] = DiscoveryViewModel.sampleCards()
 
     func handle(_ action: SwipeAction) {
         guard !cards.isEmpty else { return }
@@ -22,10 +24,10 @@ final class DiscoveryViewModel: ObservableObject {
 
 extension DiscoveryViewModel {
     static func sampleCards() -> [UserCard] {
-        let f1 = URL(string: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=200&q=60")!
-        let f2 = URL(string: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&q=60")!
-        let f3 = URL(string: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&q=60")!
-        let f4 = URL(string: "https://images.unsplash.com/photo-1531123414780-f742e8c2d21a?w=200&q=60")!
+        let f1 = URL(string: "https://i.pravatar.cc/500?img=1")!
+        let f2 = URL(string: "https://i.pravatar.cc/500?img=3")!
+        let f3 = URL(string: "https://i.pravatar.cc/500?img=4")!
+        let f4 = URL(string: "https://i.pravatar.cc/500?img=5")!
 
         return [
             UserCard(
@@ -33,7 +35,7 @@ extension DiscoveryViewModel {
                 age: 20,
                 location: "Seattle, USA",
                 tag: "Versatile",
-                imageURL: URL(string: "https://images.unsplash.com/photo-1503342217505-b0a15cf70489?w=1200&q=80"),
+                imageURL: URL(string: "https://i.pravatar.cc/500?img=10"),
                 photos: [],
                 bio: "My name is Herman and I enjoy meeting new people and finding ways to help them have an uplifting experience. I enjoy reading, and the knowledge…",
                 heightCM: 172,
@@ -49,7 +51,7 @@ extension DiscoveryViewModel {
                 age: 24,
                 location: "San Francisco, USA",
                 tag: "Designer",
-                imageURL: URL(string: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1200&q=80"),
+                imageURL: URL(string: "https://i.pravatar.cc/500?img=40"),
                 photos: [],
                 bio: "Product designer who loves hiking and cooking.",
                 heightCM: 165,
@@ -65,7 +67,7 @@ extension DiscoveryViewModel {
                 age: 22,
                 location: "Austin, USA",
                 tag: "Athletic",
-                imageURL: URL(string: "https://images.unsplash.com/photo-1519340247619-8e3f06eb8f91?w=1200&q=80"),
+                imageURL: URL(string: "https://i.pravatar.cc/500?img=50"),
                 photos: [],
                 bio: "Runner and weekend traveler. Building an indie app in Swift.",
                 heightCM: 180,

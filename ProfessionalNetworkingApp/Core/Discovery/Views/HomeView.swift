@@ -4,12 +4,13 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.appPalette) private var p
+    @State private var viewModel = DiscoveryViewModel()
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
             VStack(spacing: 0) {
                 header
-                SwipeView()
+                SwipeView(viewModel: $viewModel)
                 Spacer(minLength: 0)
             }
         }
@@ -17,13 +18,12 @@ struct HomeView: View {
 
     private var header: some View {
         HStack {
-            Button(action: {}) {
-                Image(systemName: "square.grid.2x2")
-                    .font(.title3)
-                    .foregroundColor(p.secondary)
-                    .padding(AppTheme.Space.sm)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+            // Reload button (top-left), like screenshot
+            Button(action: { withAnimation(.spring()) { viewModel.reload() } }) {
+                ZStack {
+                    Circle().fill(.ultraThinMaterial).frame(width: 36, height: 36)
+                    Image(systemName: "arrow.clockwise").foregroundColor(p.secondary)
+                }
             }
             Spacer()
             Text("Find Match")

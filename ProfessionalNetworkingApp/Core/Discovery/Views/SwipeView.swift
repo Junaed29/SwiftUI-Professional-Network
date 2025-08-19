@@ -4,7 +4,7 @@ import SwiftUI
 
 struct SwipeView: View {
     @Environment(\.appPalette) private var p
-    @StateObject private var viewModel = DiscoveryViewModel()
+    @Binding var viewModel : DiscoveryViewModel
 
     // Gesture state for the top card
     @State private var dragOffset: CGSize = .zero
@@ -12,19 +12,13 @@ struct SwipeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ZStack(alignment: .topLeading) {
-                deck
-                // Reload button (top-left), like screenshot
-                Button(action: { withAnimation(.spring()) { viewModel.reload() } }) {
-                    ZStack {
-                        Circle().fill(.ultraThinMaterial).frame(width: 36, height: 36)
-                        Image(systemName: "arrow.clockwise").foregroundColor(p.secondary)
-                    }
-                }
-                .padding(AppTheme.Space.md)
-            }
-            .padding(.horizontal, AppTheme.Space.lg)
-            .padding(.top, AppTheme.Space.lg)
+
+            Spacer(minLength: AppTheme.Space.xl)
+
+            deck
+                .padding(.horizontal, AppTheme.Space.sm)
+                .padding(.top, AppTheme.Space.lg)
+
 
             Spacer(minLength: AppTheme.Space.xl)
 
@@ -62,6 +56,7 @@ struct SwipeView: View {
                         .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
                 }
             }
+            .hidden()
             .padding(.bottom, AppTheme.Space.xl)
         }
     }
@@ -91,7 +86,7 @@ struct SwipeView: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 480, maxHeight: 560)
+        .frame(maxWidth: .infinity, minHeight: 480)
     }
 
     private func scale(for index: Int) -> CGFloat {
@@ -144,4 +139,7 @@ struct SwipeView: View {
     }
 }
 
-#Preview { SwipeView().appTheme() }
+#Preview {
+    SwipeView(viewModel: .constant(DiscoveryViewModel()))
+        .appTheme()
+}

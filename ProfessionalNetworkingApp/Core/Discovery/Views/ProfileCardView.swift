@@ -15,28 +15,26 @@ struct ProfileCardView: View {
                 .shadow(color: p.textPrimary.opacity(0.12), radius: 8, y: 6)
 
             footer
-                .padding(AppTheme.Space.lg)
+                .padding(AppTheme.Space.md)
         }
-        .frame(maxWidth: .infinity, minHeight: 420, maxHeight: 520)
+        .frame(maxWidth: .infinity, minHeight: 420)
     }
 
     private var photo: some View {
         Group {
             if let url = card.imageURL {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ZStack { p.bgAlt; ProgressView().tint(p.primary) }
-                    case .success(let image):
-                        image.resizable().scaledToFill()
-                    case .failure:
-                        ZStack { p.bgAlt; Image(systemName: "person.fill").font(.largeTitle).foregroundColor(p.textSecondary) }
-                    @unknown default:
-                        Color.clear
-                    }
-                }
+                ImageLoader(
+                    url: url,
+                    contentMode: .fill,
+                    cornerRadius: 12
+                )
             } else {
-                ZStack { p.bgAlt; Image(systemName: "person.fill").font(.largeTitle).foregroundColor(p.textSecondary) }
+                ZStack {
+                    p.bgAlt
+                    Image(systemName: "person.fill")
+                        .font(.largeTitle)
+                        .foregroundColor(p.textSecondary)
+                }
             }
         }
         .overlay(alignment: .topTrailing) { flameBadge.padding(AppTheme.Space.sm) }
@@ -49,7 +47,7 @@ struct ProfileCardView: View {
                 Text("\(card.age)").font(.headline).foregroundColor(p.secondary)
             }
             HStack(spacing: AppTheme.Space.sm) {
-                tagChip(card.tag)
+                ChipView(text: card.tag, background: p.card, textColor: p.secondary)
                 Text(card.location).styled(.caption, color: p.secondary.opacity(0.9))
                 Spacer()
             }
@@ -62,18 +60,9 @@ struct ProfileCardView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal, AppTheme.Space.lg)
-        .padding(.bottom, AppTheme.Space.sm)
     }
 
-    private func tagChip(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.semibold))
-            .foregroundColor(p.secondary)
-            .padding(.horizontal, AppTheme.Space.sm)
-            .padding(.vertical, AppTheme.Space.xs)
-            .background(p.alert.opacity(0.9))
-            .clipShape(Capsule())
-    }
+
 
     private var flameBadge: some View {
         ZStack {
@@ -90,7 +79,7 @@ struct ProfileCardView: View {
         age: 20,
         location: "Seattle, USA",
         tag: "Versatile",
-        imageURL: nil,
+        imageURL: URL(string: "https://i.pravatar.cc/500?img=1"),
         photos: [],
         bio: "Sample bio",
         heightCM: 172,
