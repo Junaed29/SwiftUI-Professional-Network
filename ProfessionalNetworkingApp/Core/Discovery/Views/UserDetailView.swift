@@ -3,88 +3,167 @@
 import SwiftUI
 
 struct UserDetailView: View {
+    // For “other user” profile we usually load by id
+    let userID: String
+
     @Environment(\.appPalette) private var p
-    let card: UserCard
-    @State private var showMoreAbout = false
+    @State private var vm = ProfileViewModel()
+
+    var body: some View {
+        ThemedScreen(usePadding: false, background: .gradient) {
+            Group {
+                if vm.isLoading {
+                    ThemedLoadingView(message: "Loading profile…")
+                } else if let error = vm.errorMessage {
+                    VStack(spacing: AppTheme.Space.lg) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 34))
+                            .foregroundColor(p.alert)
+                        Text("Failed to load profile")
+                            .styled(.headline)
+                        Text(error)
+                            .styled(.body, color: p.textSecondary)
+                            .multilineTextAlignment(.center)
+                        Button("Retry") {
+                            Task { await vm.loadOtherUserProfile(userID: userID) }
+                        }
+                        .buttonStyle(OutlineButtonStyle())
+                        .frame(maxWidth: 200)
+                    }
+                    .padding()
+                } else {
+                    content
+                }
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            if !vm.isLoading && vm.errorMessage == nil {
+                actionBar.padding()
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await vm.loadOtherUserProfile(userID: userID) }
+    }
+
+    // MARK: - Content
+    private var content: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Hero
+                HeaderHero(imageURL: vm.profile.imageURL)
+
+                // Header card (name / age / location / menu)
+                headerIdentity
+
+                Divider().background(p.divider)
+
+                // About
+                section(title: "About") { aboutSection }
+
+                // Friends row
+                if !vm.profile.friends.isEmpty {
+                    section(title: "Friends") {
+                        FriendsRow(friends: vm.profile.friends)
+                    }
+                }
+
+                // Basics grid
+                section(title: "Basic profile") {
+                    BasicsGrid(
+                        heightCM: vm.profile.heightCM,
+                        weightKG: vm.profile.weightKG,
+                        relationshipStatus: vm.profile.relationshipStatus,
+                        ethnicity: vm.profile.ethnicity
+                    )
+                }
+
+                // Interests
+                if !vm.profile.interests.isEmpty {
+                    section(title: "Interests") { wrapChips(vm.profile.interests) }
+                }
+
+                // Looking for
+                if !vm.profile.lookingFor.isEmpty {
+                    section(title: "Looking for") { wrapChips(vm.profile.lookingFor) }
+                }
+
+                Spacer(minLength: 88) // for bottom bar spacing
+            }
+        }
+    }
+
+    // MARK: - Subviews
+
+    private var headerIdentity: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(vm.profile.fullName).font(.title3.weight(.semibold)).foregroundColor(p.secondary)
+                        if let age = vm.profile.age {
+                            Text("· \(age)").foregroundColor(p.secondary.opacity(0.9)).font(.headline)
+                        }
+                    }
+                    HStack(spacing: 8) {
+                        if vm.profile.isVerified {
+                            Text("Verified")
+                                .font(.caption2.bold())
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(p.success)
+                                .foregroundColor(.white)
+                                .cornerRadius(6)
+                        }
+                        if let city = vm.profile.city, let country = vm.profile.country {
+                            HStack(spacing: 4) {
+                                Image(systemName: "mappin.and.ellipse")
+                                Text("\(city), \(country)")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(.ultraThinMaterial.opacity(0.2))
+                            .cornerRadius(6)
+                        }
+                    }
+                }
+                Spacer()
+                Button {
+                    // message
+                } label: {
+                    Image(systemName: "ellipsis.message.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 54, height: 54)
+                        .background(p.info)
+                        .clipShape(Circle())
+                        .shadow(radius: 4, y: 2)
+                }
+                .padding(.vertical,AppTheme.Space.sm)
+
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 12)
+            .background(LinearGradient(colors: [Color.black.opacity(0.35), .clear], startPoint: .top, endPoint: .bottom))
+        }
+        .offset(y: -96) // pull over the hero
+        .padding(.bottom, -96)
+    }
+
+    // MARK: - About Sections
     // Measurement to detect truncation beyond 3 lines
     @State private var fullBioHeight: CGFloat = 0
     @State private var limitedBioHeight: CGFloat = 0
     private let bioLineLimit: Int = 3
+    @State private var showMoreAbout = false
 
-    var body: some View {
-        ThemedScreen(usePadding: false, background: .solid) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Space.lg) {
-                    hero
-                    header
-                    Divider().overlay(p.divider)
-                    aboutSection
-                    friendsSection
-                    basicProfileSection
-                    interestsSection
-                    lookingForSection
-                    Spacer(minLength: AppTheme.Space.xl)
-                }
-                .padding(.horizontal, AppTheme.Space.lg)
-                .padding(.top, AppTheme.Space.lg)
-                .padding(.bottom, 96) // space for bottom bar
-            }
-            .safeAreaInset(edge: .bottom) { bottomBar }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: - Top
-    private var hero: some View {
-        Group {
-            if let url = card.imageURL {
-                ImageLoader(
-                    url: url,
-                    contentMode: .fill,
-                    cornerRadius: 12
-                )
-            } else {
-                ZStack { p.bgAlt; Image(systemName: "person.fill").font(.largeTitle).foregroundColor(p.textSecondary) }
-            }
-        }
-        .frame(height: 280)
-        .frame(maxWidth: .infinity)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg))
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            HStack(spacing: AppTheme.Space.sm) {
-                Text(card.name)
-                    .font(.title.weight(.semibold))
-                    .foregroundColor(p.secondary)
-                Text("\(card.age)")
-                    .font(.headline)
-                    .foregroundColor(p.secondary)
-                Spacer()
-                Button(action: {}) {
-                    Image(systemName: "ellipsis").font(.headline).foregroundColor(p.secondary)
-                }
-            }
-            HStack(spacing: AppTheme.Space.sm) {
-                tagChip(card.tag)
-                Text(card.location).styled(.body, color: p.textSecondary)
-            }
-        }
-    }
-
-    // MARK: - Sections
     private var aboutSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            sectionTitle("About")
-            // Displayed bio
-            Text(card.bio)
+            Text(vm.profile.bio)
                 .styled(.body, color: p.textSecondary)
                 .lineLimit(showMoreAbout ? nil : bioLineLimit)
                 .background(
                     // Measure limited height (3 lines) using an invisible twin
-                    Text(card.bio)
+                    Text(vm.profile.bio)
                         .styled(.body, color: p.textSecondary)
                         .lineLimit(bioLineLimit)
                         .fixedSize(horizontal: false, vertical: true)
@@ -95,7 +174,7 @@ struct UserDetailView: View {
                 )
                 .overlay(
                     // Measure full height (no limit) using another invisible twin
-                    Text(card.bio)
+                    Text(vm.profile.bio)
                         .styled(.body, color: p.textSecondary)
                         .lineLimit(nil)
                         .fixedSize(horizontal: false, vertical: true)
@@ -116,100 +195,35 @@ struct UserDetailView: View {
         }
     }
 
-    private var friendsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            sectionTitle("Friends")
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppTheme.Space.md) {
-                    ForEach(Array(card.friends.enumerated()), id: \.offset) { _, url in
-                        ImageLoader(
-                            url: url,
-                            contentMode: .fill,
-                            cornerRadius: 12
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private var basicProfileSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            sectionTitle("Basic profile")
-            VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-                if let h = card.heightCM { infoRow("Height", value: "\(h)cm") }
-                if let w = card.weightKG { infoRow("Weight", value: "\(w)kg") }
-                if let rs = card.relationshipStatus { infoRow("Relationship status", value: rs) }
-                if let eth = card.ethnicity { infoRow("Ethnicity", value: eth) }
-            }
-        }
-    }
-
-    private var interestsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            sectionTitle("Interesting")
-            wrapChips(card.interests)
-        }
-    }
-
-    private var lookingForSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            sectionTitle("Looking for")
-            wrapChips(card.lookingFor)
-        }
-    }
-
-    // MARK: - Bottom bar
-    private var bottomBar: some View {
-        HStack(spacing: AppTheme.Space.lg) {
-            circleAction(system: "xmark", bg: p.secondary, fg: p.alert)
-            circleAction(system: "heart.fill", bg: p.primary, fg: p.secondary)
-            circleAction(system: "bubble.left.fill", bg: p.secondary, fg: p.primary)
-        }
-        .padding(.vertical, AppTheme.Space.md)
-        .background(p.bg.opacity(0.9))
-    }
-
-    // MARK: - Helpers
-    private func sectionTitle(_ text: String) -> some View {
-        Text(text).styled(.title3)
-    }
-
-    private func infoRow(_ key: String, value: String) -> some View {
-        HStack {
-            Text("\(key) :").styled(.body, color: p.textSecondary)
-            Text(value).styled(.body)
-            Spacer()
-        }
-    }
-
     private func wrapChips(_ items: [String]) -> some View {
         FlexibleChips(items: items)
     }
 
-    private func tagChip(_ text: String) -> some View {
-        Text(text)
-            .font(.caption.weight(.semibold))
-            .foregroundColor(p.secondary)
-            .padding(.horizontal, AppTheme.Space.sm)
-            .padding(.vertical, AppTheme.Space.xs)
-            .background(p.alert)
-            .clipShape(Capsule())
+    private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title).font(.headline).foregroundColor(p.textPrimary)
+            content()
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 14)
+        .background(p.bg.opacity(0.001)) // list-friendly tap area
     }
 
-    private func circleAction(system: String, bg: Color, fg: Color) -> some View {
-        Image(systemName: system)
-            .font(.title2.weight(.bold))
-            .foregroundColor(fg)
-            .frame(width: 56, height: 56)
-            .background(bg)
-            .clipShape(Circle())
-            .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
-            .frame(maxWidth: .infinity)
+    private var actionBar: some View {
+        Menu {
+            Button("Report", role: .destructive) {}
+            Button("Share Profile") {}
+        } label: {
+            Image(systemName: "ellipsis")
+                .foregroundColor(.white)
+                .padding(8)
+                .background(Color.black.opacity(0.3))
+                .clipShape(Circle())
+        }
     }
 }
 
-// Layout helper to wrap chips across lines
+// MARK: - Layout helper to wrap chips across lines
 private struct FlexibleChips: View {
     @Environment(\.appPalette) private var p
     let items: [String]
@@ -224,7 +238,30 @@ private struct FlexibleChips: View {
     }
 }
 
-// Preference keys for measuring text heights
+// MARK: - Header hero image with gradient
+private struct HeaderHero: View {
+    @Environment(\.appPalette) private var p
+    let imageURL: URL?
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            ImageLoader(
+                url: imageURL,
+                contentMode: .fill,
+                cornerRadius: 12
+            )
+            LinearGradient(
+                colors: [Color.black.opacity(0.55), Color.black.opacity(0.0)],
+                startPoint: .bottom, endPoint: .top
+            )
+            .frame(height: 180)
+        }
+        .frame(height: 360)
+        .clipped()
+    }
+}
+
+// MARK: - Preference keys for measuring text heights
 private struct FullTextHeightKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
@@ -234,22 +271,66 @@ private struct LimitedTextHeightKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
+// MARK: - Friends avatars row
+private struct FriendsRow: View {
+    @Environment(\.appPalette) private var p
+    let friends: [Friend]
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 14) {
+                ForEach(friends) { f in
+                    ImageLoader(
+                        url: f.avatarURL,
+                        contentMode: .fill,
+                    )
+                    .frame(width: 44, height: 44)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(p.divider))
+                    .overlay(alignment: .bottomTrailing) {
+                        Circle().fill(.white).frame(width: 10, height: 10)
+                            .overlay(Circle().fill(p.success).frame(width: 8, height: 8))
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+// MARK: - Basics grid
+private struct BasicsGrid: View {
+    @Environment(\.appPalette) private var p
+    let heightCM: Int?
+    let weightKG: Int?
+    let relationshipStatus: String?
+    let ethnicity: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            InfoRow(label: "Height", value: heightCM.map { "\($0) cm" })
+            InfoRow(label: "Weight", value: weightKG.map { "\($0) kg" })
+            InfoRow(label: "Relationship status", value: relationshipStatus)
+            InfoRow(label: "Ethnicity", value: ethnicity)
+        }
+    }
+
+    private struct InfoRow: View {
+        @Environment(\.appPalette) private var p
+        let label: String
+        let value: String?
+        var body: some View {
+            HStack {
+                Text(label).foregroundColor(p.textSecondary)
+                Spacer()
+                Text(value ?? "—").foregroundColor(p.textPrimary)
+            }
+            .font(.subheadline)
+            .padding(.vertical, 6)
+            .overlay(Divider().background(p.divider), alignment: .bottom)
+        }
+    }
+}
 #Preview {
-    UserDetailView(card: UserCard(
-        name: "Ava",
-        age: 23,
-        location: "Engineer City",
-        tag: "Engineer",
-        imageURL: nil,
-        photos: [],
-        bio: "Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch. Curious builder who enjoys books and brunch.",
-        heightCM: 168,
-        weightKG: 58,
-        relationshipStatus: "Single",
-        ethnicity: "Asian",
-        interests: ["Reading", "Music", "Hiking","Readifng", "Musifc", "Hifking","Readfing", "Mussic", "Hiking","Reading", "Msusic", "Hiking"],
-        lookingFor: ["Friend", "Dating"],
-        friends: []
-    ))
+    UserDetailView(userID: "")
     .appTheme()
 }
