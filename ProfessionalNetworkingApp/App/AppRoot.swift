@@ -11,7 +11,6 @@ import SwiftUI
 /// `.id(appState.currentFlow)` forces recreation when the flow flips, resetting each stack cleanly.
 struct AppRoot: View {
     @State private var appState = AppState()
-    let onBoardingData = OnboardingDataModel.compactData
 
     var body: some View {
         Group {
@@ -27,6 +26,7 @@ struct AppRoot: View {
             }
         }
         .id(appState.currentFlow)
+        .animation(.easeInOut(duration: 0.2), value: appState.currentFlow)
         .provideAppState(appState)
         .appTheme()      
     }

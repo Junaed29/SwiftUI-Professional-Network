@@ -8,7 +8,6 @@ struct OAuthLoginView: View {
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
-
                 VStack(spacing: AppTheme.Space.lg) {
                     // Panel container
                     VStack(alignment: .leading, spacing: AppTheme.Space.lg) {
