@@ -15,8 +15,40 @@ struct ProfileDetailView: View {
     @Environment(\.appPalette) private var p
     @State private var vm = ProfileViewModel()
 
-
     var body: some View {
+        ThemedScreen(usePadding: false, background: .gradient) {
+            Group {
+                if vm.isLoading {
+                    ThemedLoadingView(message: "Loading profile…")
+                } else if let error = vm.errorMessage {
+                    VStack(spacing: AppTheme.Space.lg) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 34))
+                            .foregroundColor(p.alert)
+                        Text("Failed to load profile")
+                            .styled(.headline)
+                        Text(error)
+                            .styled(.body, color: p.textSecondary)
+                            .multilineTextAlignment(.center)
+                        Button("Retry") {
+                            Task { await vm.loadOtherUserProfile(userID: userID) }
+                        }
+                        .buttonStyle(OutlineButtonStyle())
+                        .frame(maxWidth: 200)
+                    }
+                    .padding()
+                } else {
+                    content
+                }
+            }
+        }
+        .overlay(alignment: .bottom) { if !vm.isLoading && vm.errorMessage == nil { actionBar } }
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await vm.loadOtherUserProfile(userID: userID) }
+    }
+
+    // MARK: - Content
+    private var content: some View {
         ScrollView {
             VStack(spacing: 0) {
                 // Hero
@@ -28,9 +60,7 @@ struct ProfileDetailView: View {
                 Divider().background(p.divider)
 
                 // About
-                section(title: "About") {
-                    aboutSection
-                }
+                section(title: "About") { aboutSection }
 
                 // Friends row
                 if !vm.profile.friends.isEmpty {
@@ -51,25 +81,17 @@ struct ProfileDetailView: View {
 
                 // Interests
                 if !vm.profile.interests.isEmpty {
-                    section(title: "Interests") {
-                        wrapChips(vm.profile.interests)
-                    }
+                    section(title: "Interests") { wrapChips(vm.profile.interests) }
                 }
 
                 // Looking for
                 if !vm.profile.lookingFor.isEmpty {
-                    section(title: "Looking for") {
-                        wrapChips(vm.profile.lookingFor)
-                    }
+                    section(title: "Looking for") { wrapChips(vm.profile.lookingFor) }
                 }
 
                 Spacer(minLength: 88) // for bottom bar spacing
             }
-            .background(LinearGradient(colors: [p.bg, p.bgAlt], startPoint: .top, endPoint: .bottom))
         }
-        .overlay(alignment: .bottom) { actionBar }
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await vm.loadOtherUserProfile(userID: userID) }
     }
 
     // MARK: - Subviews
