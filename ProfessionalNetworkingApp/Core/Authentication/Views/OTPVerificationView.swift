@@ -4,10 +4,11 @@ import SwiftUI
 
 struct OTPVerificationView: View {
     @Environment(\.appPalette) private var p
+    @Environment(\.appState) private var appState
     @State private var code: String = ""
     @State private var countdown: Int = 59
     @FocusState private var isFocused: Bool
-    @StateObject private var viewModel = AuthenticationViewModel()
+    @State private var viewModel = AuthenticationViewModel()
 
     // Optionally show the phone number that received the code
     var phoneDisplay: String? = nil
@@ -100,6 +101,11 @@ struct OTPVerificationView: View {
             }
         }
         .onAppear { isFocused = true }
+        .onChange(of: viewModel.state.isAuthenticated){ _, newValue in
+            if newValue {
+                appState.loginSucceeded()
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
     }
 

@@ -26,9 +26,7 @@ struct WelcomeView: View {
                         .styled(.body, color: p.textSecondary)
                         .multilineTextAlignment(.center)
 
-                    NavigationLink(destination: PhoneLoginView()) {
-                        Text("Get Started")
-                    }
+                    Button("Get Started", action: {router.push(.phoneLogin)})
                     .buttonStyle(PrimaryButtonStyle())
 
                     HStack(spacing: 4) {
@@ -36,7 +34,7 @@ struct WelcomeView: View {
                             .styled(.caption2, color: p.textSecondary)
 
                         Button {
-                            router.push(.dashboard)
+                            router.push(.oAuthLogin)
                         } label: {
                             Text("Sign In")
                                 .styled(.caption2, color: p.primary)

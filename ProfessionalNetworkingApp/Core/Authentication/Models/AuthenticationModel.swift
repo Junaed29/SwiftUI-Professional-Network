@@ -10,6 +10,7 @@ enum AuthMethod: String, Codable {
 
 struct AuthenticationState: Codable {
     var isAuthenticated: Bool = false
+    var otpCodeSend: Bool = false
     var phoneNumber: String = ""
     var otpCode: String = ""
     var authMethod: AuthMethod? = nil

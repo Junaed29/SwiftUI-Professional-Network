@@ -2,14 +2,13 @@
 // Manages authentication flows
 
 import Foundation
-import Combine
+import Observation
 
-final class AuthenticationViewModel: ObservableObject {
-    @Published var state = AuthenticationState()
-    @Published var isLoading = false
-    @Published var errorMessage: String? = nil
-
-    private var cancellables = Set<AnyCancellable>()
+@Observable
+final class AuthenticationViewModel {
+    var state = AuthenticationState()
+    var isLoading = false
+    var errorMessage: String? = nil
 
     func sendOTP() {
         errorMessage = nil
@@ -17,6 +16,7 @@ final class AuthenticationViewModel: ObservableObject {
         // Simulate async work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.isLoading = false
+            self?.state.otpCodeSend.toggle()
         }
     }
 

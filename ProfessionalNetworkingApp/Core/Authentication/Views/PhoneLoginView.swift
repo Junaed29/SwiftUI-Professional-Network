@@ -4,10 +4,11 @@ import SwiftUI
 
 struct PhoneLoginView: View {
     @Environment(\.appPalette) private var p
+    @Environment(\.appRouter) var router
     @State private var rawPhone: String = ""
     @State private var selectedCountry: CountryCode = .us
     @State private var showValidation: Bool = false
-    @StateObject private var viewModel = AuthenticationViewModel()
+    @State private var viewModel = AuthenticationViewModel()
 
     private var sanitizedDigits: String {
         rawPhone.filter { $0.isNumber }
@@ -24,7 +25,6 @@ struct PhoneLoginView: View {
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
-            ScrollView {
                 VStack(spacing: AppTheme.Space.lg) {
                     // Title bar
                     Text("Phone Verification")
@@ -82,6 +82,8 @@ struct PhoneLoginView: View {
                         .buttonStyle(PrimaryButtonStyle())
                         .disabled(!isValid || viewModel.isLoading)
 
+                        Spacer()
+
                         // Legal
                         legalText
                             .padding(.top, AppTheme.Space.sm)
@@ -90,11 +92,14 @@ struct PhoneLoginView: View {
                     .padding(.vertical, AppTheme.Space.lg)
                     .cornerRadius(AppTheme.Radius.xl)
                     .padding(.horizontal, AppTheme.Space.lg)
-                    .padding(.bottom, AppTheme.Space.lg)
                 }
-            }
         }
         .onChange(of: rawPhone) { _, _ in showValidation = true }
+        .onChange(of: viewModel.state.otpCodeSend){ _, newValue in
+            if newValue {
+                router.push(.otpVerification(phone: rawPhone))
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
     }
 

@@ -4,7 +4,7 @@ import SwiftUI
 
 struct OAuthLoginView: View {
     @Environment(\.appPalette) private var p
-    @StateObject private var viewModel = AuthenticationViewModel()
+    @State private var viewModel = AuthenticationViewModel()
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
