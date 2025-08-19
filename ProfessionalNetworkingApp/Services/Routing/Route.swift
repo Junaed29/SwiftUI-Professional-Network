@@ -19,7 +19,8 @@ enum Route: Hashable {
     case otpVerification(phone: String)
 
     // Main
-    case dashboard
+    case mainTabBar
+
 
     // Example: pass ids or parameters as needed
     // case profileDetail(userID: String)

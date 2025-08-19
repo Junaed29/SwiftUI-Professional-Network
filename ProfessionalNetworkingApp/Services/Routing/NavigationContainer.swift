@@ -36,8 +36,8 @@ struct NavigationContainer<Root: View>: View {
         switch route {
         case .welcome:
             WelcomeView()
-        case .dashboard:
-            HomeView()
+        case .mainTabBar:
+            MainTabView()
         case .phoneLogin:
             PhoneLoginView()
         case .oAuthLogin:
