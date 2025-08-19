@@ -23,7 +23,7 @@ struct AppRoot: View {
                 NavigationContainer { WelcomeView() } // or LoginView()
 
             case .main:
-                NavigationContainer { HomeView() }
+                NavigationContainer { MainTabView() }
             }
         }
         .id(appState.currentFlow)
