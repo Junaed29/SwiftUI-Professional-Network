@@ -1,4 +1,29 @@
-// MARK: - Empty State
+//
+//  EmptyStateView.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+import SwiftUI
+
+/*
+Overview
+- Small, reusable UI pieces built on top of AppTheme (cards, badges, loading, empty states).
+
+When to use
+- EmptyStateView: friendly placeholder for empty/error views.
+
+
+Quick examples
+
+  EmptyStateView(icon: "tray",
+                 title: "No Items",
+                 message: "Try adding a new item",
+                 actionTitle: "Add",
+                 action: { showingAdd = true })
+*/
+
 /// Friendly placeholder for empty lists or error states.
 public struct EmptyStateView: View {
     @Environment(\.colorScheme) private var scheme

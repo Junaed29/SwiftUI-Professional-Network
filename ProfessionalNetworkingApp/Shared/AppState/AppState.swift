@@ -9,7 +9,6 @@
 import SwiftUI
 
 @Observable
-@MainActor
 final class AppState {
     private enum Keys {
         static let onboarding = "hasCompletedOnboarding"

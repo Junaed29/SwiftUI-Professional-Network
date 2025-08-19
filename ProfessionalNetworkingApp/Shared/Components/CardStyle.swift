@@ -1,4 +1,26 @@
-// MARK: - Card Styles
+//
+//  CardStyle.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+/*
+Overview
+- Small, reusable UI pieces built on top of AppTheme (cards, badges, loading, empty states).
+
+When to use
+- ThemedCard: wrap content on a surface (default/subtle/elevated/bordered).
+
+
+Quick examples
+  ThemedCard(style: .elevated) {
+    Text("Profile").styled(.headline)
+  }
+
+*/
+
+import SwiftUI
+
 /// Card style variants for ThemedCard.
 public enum CardStyle {
     case `default`

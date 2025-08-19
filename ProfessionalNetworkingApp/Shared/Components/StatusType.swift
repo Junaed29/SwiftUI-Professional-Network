@@ -1,4 +1,25 @@
-// MARK: - Status Badge
+//
+//  StatusType.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+import SwiftUI
+
+/*
+Overview
+- Small, reusable UI pieces built on top of AppTheme (cards, badges, loading, empty states).
+
+When to use
+- ThemedCard: wrap content on a surface (default/subtle/elevated/bordered).
+- StatusBadge: show small status labels (success/alert/warning/info/neutral).
+
+
+Quick examples
+  HStack { StatusBadge(.success, "Active"); StatusBadge(.warning, "Pending") }
+*/
+
 /// Small, colored badge for labeling statuses.
 public enum StatusType {
     case success
