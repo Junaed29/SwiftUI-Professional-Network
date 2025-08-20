@@ -664,9 +664,9 @@ This project represents the foundation for a comprehensive professional networki
 I'm passionate about both iOS development and the potential for technology to foster meaningful professional connections. This project represents my approach to building scalable, maintainable iOS applications with exceptional user experiences.
 
 ### **Professional Links**
-- 💼 **LinkedIn**: [Connect professionally](https://linkedin.com/in/yourprofile)
-- 🐙 **GitHub**: [@yourusername](https://github.com/yourusername)
-- 📧 **Email**: [your.email@example.com](mailto:your.email@example.com)
+- 💼 **LinkedIn**: [Connect professionally](https://linkedin.com/in/junaed29)
+- 🐙 **GitHub**: [@Junaed29](https://github.com/junaed29)
+- 📧 **Email**: [junaed.dev@example.com](mailto:junaed.dev@example.com)
 
 ### **Project Discussions**
 - 💬 **Issues**: Use GitHub Issues for bugs, questions, or feature suggestions
