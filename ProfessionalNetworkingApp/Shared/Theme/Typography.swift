@@ -18,7 +18,7 @@ Quick examples
 import SwiftUI
 
 /// Supported text styles used throughout the app.
-public enum TextStyle {
+public enum AppTextStyle {
     case largeTitle
     case title
     case title2
@@ -36,10 +36,10 @@ public enum TextStyle {
 /// Applies a themed font and color to text content.
 public struct ThemedText: ViewModifier {
     @Environment(\.colorScheme) private var scheme
-    private let style: TextStyle
+    private let style: AppTextStyle
     private let color: Color?
     
-    public init(_ style: TextStyle, color: Color? = nil) {
+    public init(_ style: AppTextStyle, color: Color? = nil) {
         self.style = style
         self.color = color
     }
@@ -53,7 +53,7 @@ public struct ThemedText: ViewModifier {
             .foregroundColor(textColor)
     }
     
-    private func fontForStyle(_ style: TextStyle) -> Font {
+    private func fontForStyle(_ style: AppTextStyle) -> Font {
         switch style {
         case .largeTitle:
             return .largeTitle.weight(.bold)
@@ -85,7 +85,7 @@ public struct ThemedText: ViewModifier {
 
 /// Convenience for applying ThemedText to any view that renders text.
 public extension View {
-    func styled(_ style: TextStyle, color: Color? = nil) -> some View {
+    func styled(_ style: AppTextStyle, color: Color? = nil) -> some View {
         modifier(ThemedText(style, color: color))
     }
 }

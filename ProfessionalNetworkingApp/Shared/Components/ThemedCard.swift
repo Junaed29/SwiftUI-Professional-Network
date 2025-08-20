@@ -1,5 +1,5 @@
 //
-//  CardStyle.swift
+//  ThemedCard.swift
 //  ProfessionalNetworkingApp
 //
 //  Created by Junaed Chowdhury on 19/8/25.

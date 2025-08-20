@@ -2,6 +2,9 @@
 //  ExpandableText.swift
 //  ProfessionalNetworkingApp
 //
+//  Created by Junaed Chowdhury on 20/8/25.
+//
+//
 //  A reusable text block that truncates to N lines and shows
 //  a "Show more / Show less" toggle only when needed.
 //  It measures limited vs full height using hidden twins + PreferenceKeys,
