@@ -1,5 +1,8 @@
 // UserDetailView.swift
-// Shows the details of a tapped discovery card (UserCard/UserProfile)
+//
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
 
 import SwiftUI
 

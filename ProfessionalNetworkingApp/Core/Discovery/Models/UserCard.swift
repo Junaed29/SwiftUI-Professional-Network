@@ -1,5 +1,7 @@
 // UserCard.swift (deprecated)
-// For backward compatibility during migration; prefer using UserProfile directly.
+// 
+//  Created by Junaed Chowdhury on 19/8/25.
+//
 
 import Foundation
 
