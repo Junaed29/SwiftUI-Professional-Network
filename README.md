@@ -1,6 +1,6 @@
-# 🤝 Professional Networking App
+# 🤝 SwiftUI Professional Network
 
-> *A SwiftUI prototype exploring modern approaches to professional networking*
+> *A modern SwiftUI prototype exploring innovative approaches to professional networking*
 
 [![iOS](https://img.shields.io/badge/iOS-17.6+-blue?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange?logo=swift&logoColor=white)](https://swift.org)
@@ -10,7 +10,7 @@
 
 ## 🎯 Project Overview
 
-This is a comprehensive **SwiftUI prototype** that reimagines professional networking with a Tinder-style discovery interface. Built as a showcase of modern iOS development practices, it demonstrates clean architecture, custom design systems, sophisticated UI/UX patterns, and advanced SwiftUI features—all while maintaining production-quality code organization.
+**SwiftUI Professional Network** is a comprehensive prototype that reimagines professional networking with a Tinder-style discovery interface. Built as a showcase of modern iOS development practices, it demonstrates clean architecture, custom design systems, sophisticated UI/UX patterns, and advanced SwiftUI features—all while maintaining production-quality code organization.
 
 **Current Status**: UI/UX prototype with mock data • **Goal**: Full-featured networking platform
 
