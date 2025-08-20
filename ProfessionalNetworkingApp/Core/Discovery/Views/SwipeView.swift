@@ -60,6 +60,7 @@ struct SwipeView: View {
             }
             .padding(.bottom, AppTheme.Space.sm)
             .disabled(gateActive)
+            .hidden()
         }
     }
 
