@@ -666,7 +666,7 @@ I'm passionate about both iOS development and the potential for technology to fo
 ### **Professional Links**
 - 💼 **LinkedIn**: [Connect professionally](https://linkedin.com/in/junaed29)
 - 🐙 **GitHub**: [@Junaed29](https://github.com/junaed29)
-- 📧 **Email**: [junaed.dev@example.com](mailto:junaed.dev@example.com)
+- 📧 **Email**: [junaed.dev@gmail.com](mailto:junaed.dev@gmail.com)
 
 ### **Project Discussions**
 - 💬 **Issues**: Use GitHub Issues for bugs, questions, or feature suggestions
