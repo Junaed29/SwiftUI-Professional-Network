@@ -388,7 +388,7 @@ ProfessionalNetworkingApp/
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/ProfessionalNetworkingApp.git
+   git clone https://github.com/junaed29/ProfessionalNetworkingApp.git
    cd ProfessionalNetworkingApp
    ```
 
