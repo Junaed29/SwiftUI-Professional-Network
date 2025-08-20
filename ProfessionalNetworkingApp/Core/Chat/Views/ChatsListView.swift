@@ -1,3 +1,11 @@
+//
+//  ChatsListView.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import SwiftUI
 
 struct ChatsListView: View {
@@ -28,7 +36,13 @@ struct ChatsListView: View {
                 ProgressView().padding(.top, 24)
                 Spacer()
             } else if vm.conversations.isEmpty {
-                EmptyStateView(title: "No conversations yet", message: "Start connecting to begin a new chat.")
+                EmptyStateView(
+                        icon: "bubble.left.and.bubble.right",
+                        title: "No conversations yet",
+                        message: "Start connecting to begin a new chat.",
+                        actionTitle: "Refresh",
+                        action: { Task { await vm.load() } }
+                    )
                     .padding(.horizontal)
                     .padding(.top, 40)
             } else {

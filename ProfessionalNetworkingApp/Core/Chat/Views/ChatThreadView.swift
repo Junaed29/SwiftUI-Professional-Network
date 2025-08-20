@@ -1,3 +1,11 @@
+//
+//  ChatThreadView.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import SwiftUI
 
 struct ChatThreadView: View {
@@ -35,7 +43,7 @@ struct ChatThreadView: View {
                     .padding(.top, 8)
                 }
                 .background(p.bg)
-                .onChange(of: vm.messages.count) { _ in
+                .onChange(of: vm.messages.count) { _, _ in
                     withAnimation { proxy.scrollTo(vm.messages.last?.id, anchor: .bottom) }
                 }
             }
