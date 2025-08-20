@@ -16,8 +16,30 @@
 
 ---
 
+## 📱 App Demo
+
+### **🎬 Video Walkthrough**
+*Experience the app in action with our comprehensive demo video showcasing all key features:*
+
+[![SwiftUI Professional Network Demo](https://img.shields.io/badge/▶️%20Watch%20Demo-Click%20Here-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/shorts/BaY5gXrCIrs?feature=share)
+
+**What You'll See in the Demo:**
+- 🎭 **Onboarding Flow**: Smooth Lottie animations introducing core features (`career_growth_animation.json`, `smart_matching_simple.json`, `secure_chat_animation.json`)
+- 🏠 **Discovery Interface**: Tinder-style swiping with gesture physics and visual feedback
+- 👤 **Profile Details**: Rich user profiles with expandable content and professional information
+- 💬 **Chat System**: Modern messaging interface with search and conversation management
+- 🎨 **Theme Switching**: Live demonstration of automatic light/dark mode transitions
+- 📱 **Navigation Flow**: Seamless transitions between all major app sections with type-safe routing
+- 🔧 **Component Library**: Custom SwiftUI components like ChipView, FlowLayout, and ExpandableText in action
+- ⚡ **Performance**: 60fps animations with spring physics and smooth gesture recognition
+
+**Demo Duration**: ~3-5 minutes showcasing core functionality and technical excellence
+
+---
+
 ## 📋 Table of Contents
 
+- [📱 App Demo](#-app-demo)
 - [✨ What's Currently Implemented](#-whats-currently-implemented)
 - [🛠️ Technology Stack](#️-technology-stack)
 - [🏛️ Architecture Deep Dive](#️-architecture-deep-dive)
@@ -642,9 +664,9 @@ This project represents the foundation for a comprehensive professional networki
 I'm passionate about both iOS development and the potential for technology to foster meaningful professional connections. This project represents my approach to building scalable, maintainable iOS applications with exceptional user experiences.
 
 ### **Professional Links**
-- 💼 **LinkedIn**: [Connect professionally](https://linkedin.com/in/junaed29)
-- 🐙 **GitHub**: [@Junaed29](https://github.com/Junaed29)
-- 📧 **Email**: [junaed.dev@example.com](mailto:junaed.dev@example.com)
+- 💼 **LinkedIn**: [Connect professionally](https://linkedin.com/in/yourprofile)
+- 🐙 **GitHub**: [@yourusername](https://github.com/yourusername)
+- 📧 **Email**: [your.email@example.com](mailto:your.email@example.com)
 
 ### **Project Discussions**
 - 💬 **Issues**: Use GitHub Issues for bugs, questions, or feature suggestions

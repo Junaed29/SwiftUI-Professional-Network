@@ -227,4 +227,11 @@ struct MockProfiles {
         }
         return users
     }
+
+    static func myMockedProfile() -> UserProfile {
+        var p = MockProfiles.sample.first ?? UserProfile()
+        p.fullName = "Junaed Muhammad Chowdhury"
+        p.avatarURL = URL(string: "https://avatars.githubusercontent.com/u/34476904?v=4")!
+        return p
+    }
 }

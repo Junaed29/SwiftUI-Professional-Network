@@ -23,7 +23,7 @@ final class ProfileViewModel {
             try await Task.sleep(for: .milliseconds(600))
         } catch { }
 
-        var p = MockProfiles.sample.first ?? UserProfile()
+        var p = MockProfiles.myMockedProfile()
         let others = Array(MockProfiles.sample.dropFirst().prefix(3))
         p.connections = others.map { Connection(name: $0.fullName, headline: $0.headline, avatarURL: $0.avatarURL) }
         profile = p

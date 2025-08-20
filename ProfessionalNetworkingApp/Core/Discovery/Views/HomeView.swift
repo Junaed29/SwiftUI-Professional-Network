@@ -7,7 +7,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.appPalette) private var p
-    @State private var viewModel = DiscoveryViewModel(isCircular: false, dailyFreeLimit: nil)
+    @State private var viewModel = DiscoveryViewModel(isCircular: false, dailyFreeLimit: 4)
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
