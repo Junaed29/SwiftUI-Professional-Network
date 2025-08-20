@@ -1,3 +1,11 @@
+//
+//  NotificationsView.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import SwiftUI
 
 struct NotificationsView: View {
@@ -19,8 +27,15 @@ struct NotificationsView: View {
             if vm.isLoading {
                 ProgressView().padding(.top, 24); Spacer()
             } else if vm.filtered.isEmpty {
-                EmptyStateView(title: "No notifications", message: "You’re all caught up.")
-                    .padding(.horizontal).padding(.top, 40)
+                EmptyStateView(
+                        icon: "bell.slash",
+                        title: "No notifications",
+                        message: "You’re all caught up.",
+                        actionTitle: "Refresh",
+                        action: { Task { await vm.load() } }
+                    )
+                    .padding(.horizontal)
+                    .padding(.top, 40)
             } else {
                 List {
                     ForEach(vm.filtered) { n in

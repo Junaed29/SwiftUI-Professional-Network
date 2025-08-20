@@ -1,3 +1,11 @@
+//
+//  AppNotification.swift
+//  ProfessionalNetworkingApp
+//
+//  Created by Junaed Chowdhury on 19/8/25.
+//
+
+
 import Foundation
 
 public struct AppNotification: Identifiable, Equatable {
