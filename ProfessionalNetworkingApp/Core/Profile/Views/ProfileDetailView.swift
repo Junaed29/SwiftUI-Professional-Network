@@ -9,7 +9,6 @@
 import SwiftUI
 
 struct ProfileDetailView: View {
-    // For “other user” profile we usually load by id
     let userID: String
 
     @Environment(\.appPalette) private var p
@@ -52,9 +51,9 @@ struct ProfileDetailView: View {
         ScrollView {
             VStack(spacing: 0) {
                 // Hero
-                HeaderHero(imageURL: vm.profile.imageURL)
+                HeaderHero(imageURL: vm.profile.avatarURL)
 
-                // Header card (name / age / location / menu)
+                // Header card (name / headline / location / menu)
                 headerIdentity
 
                 Divider().background(p.divider)
@@ -62,21 +61,26 @@ struct ProfileDetailView: View {
                 // About
                 section(title: "About") { aboutSection }
 
-                // Friends row
-                if !vm.profile.friends.isEmpty {
-                    section(title: "Friends") {
-                        FriendsRow(friends: vm.profile.friends)
+                // Connections row
+                if !vm.profile.connections.isEmpty {
+                    section(title: "Connections") {
+                        ConnectionsRow(connections: vm.profile.connections)
                     }
                 }
 
-                // Basics grid
-                section(title: "Basic profile") {
-                    BasicsGrid(
-                        heightCM: vm.profile.heightCM,
-                        weightKG: vm.profile.weightKG,
-                        relationshipStatus: vm.profile.relationshipStatus,
-                        ethnicity: vm.profile.ethnicity
+                // Career basics
+                section(title: "Career") {
+                    CareerGrid(
+                        position: vm.profile.currentPosition,
+                        company: vm.profile.company,
+                        industry: vm.profile.industry,
+                        experienceYears: vm.profile.experienceYears
                     )
+                }
+
+                // Skills
+                if !vm.profile.skills.isEmpty {
+                    section(title: "Skills") { wrapChips(vm.profile.skills) }
                 }
 
                 // Interests
@@ -84,9 +88,14 @@ struct ProfileDetailView: View {
                     section(title: "Interests") { wrapChips(vm.profile.interests) }
                 }
 
-                // Looking for
-                if !vm.profile.lookingFor.isEmpty {
-                    section(title: "Looking for") { wrapChips(vm.profile.lookingFor) }
+                // Open To
+                if !vm.profile.openTo.isEmpty {
+                    section(title: "Open to") { wrapChips(vm.profile.openTo.map { $0.rawValue.capitalized }) }
+                }
+
+                // Education
+                if !vm.profile.education.isEmpty {
+                    section(title: "Education") { educationList }
                 }
 
                 Spacer(minLength: 88) // for bottom bar spacing
@@ -100,11 +109,16 @@ struct ProfileDetailView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(vm.profile.fullName).font(.title3.weight(.semibold)).foregroundColor(p.secondary)
-                        if let age = vm.profile.age {
-                            Text("· \(age)").foregroundColor(p.secondary.opacity(0.9)).font(.headline)
-                        }
+                    Text(vm.profile.fullName)
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(p.secondary)
+                    if !vm.profile.headline.isEmpty {
+                        Text(vm.profile.headline)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(.ultraThinMaterial.opacity(0.2))
+                            .cornerRadius(6)
                     }
                     HStack(spacing: 8) {
                         if vm.profile.isVerified {
@@ -148,8 +162,7 @@ struct ProfileDetailView: View {
         .padding(.bottom, -96)
     }
 
-    // MARK: - About Sections
-    // Measurement to detect truncation beyond 3 lines
+    // About measurement state
     @State private var fullBioHeight: CGFloat = 0
     @State private var limitedBioHeight: CGFloat = 0
     private let bioLineLimit: Int = 3
@@ -213,7 +226,7 @@ struct ProfileDetailView: View {
             Button {
                 // dislike / pass
             } label: {
-                Image(systemName: "heart.slash")
+                Image(systemName: "person.badge.minus")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(p.alert)
                     .frame(width: 54, height: 54)
@@ -225,7 +238,7 @@ struct ProfileDetailView: View {
             Button {
                 // like
             } label: {
-                Image(systemName: "heart.fill")
+                Image(systemName: "person.crop.circle.badge.plus")
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
                     .frame(width: 64, height: 64)
@@ -237,7 +250,7 @@ struct ProfileDetailView: View {
             Button {
                 // message
             } label: {
-                Image(systemName: "ellipsis.message.fill")
+                Image(systemName: "paperplane.fill")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 54, height: 54)
@@ -248,7 +261,6 @@ struct ProfileDetailView: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .background(.ultraThinMaterial)
     }
 }
 
@@ -300,25 +312,18 @@ private struct LimitedTextHeightKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
-// MARK: - Friends avatars row
-private struct FriendsRow: View {
+// MARK: - Connections avatars row
+private struct ConnectionsRow: View {
     @Environment(\.appPalette) private var p
-    let friends: [Friend]
+    let connections: [Connection]
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 14) {
-                ForEach(friends) { f in
-                    ImageLoader(
-                        url: f.avatarURL,
-                        contentMode: .fill,
-                    )
-                    .frame(width: 44, height: 44)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(p.divider))
-                    .overlay(alignment: .bottomTrailing) {
-                        Circle().fill(.white).frame(width: 10, height: 10)
-                            .overlay(Circle().fill(p.success).frame(width: 8, height: 8))
-                    }
+                ForEach(connections) { c in
+                    ImageLoader(url: c.avatarURL, contentMode: .fill)
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(p.divider))
                 }
             }
             .padding(.vertical, 4)
@@ -326,20 +331,20 @@ private struct FriendsRow: View {
     }
 }
 
-// MARK: - Basics grid
-private struct BasicsGrid: View {
+// MARK: - Career grid
+private struct CareerGrid: View {
     @Environment(\.appPalette) private var p
-    let heightCM: Int?
-    let weightKG: Int?
-    let relationshipStatus: String?
-    let ethnicity: String?
+    let position: String?
+    let company: String?
+    let industry: String?
+    let experienceYears: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            InfoRow(label: "Height", value: heightCM.map { "\($0) cm" })
-            InfoRow(label: "Weight", value: weightKG.map { "\($0) kg" })
-            InfoRow(label: "Relationship status", value: relationshipStatus)
-            InfoRow(label: "Ethnicity", value: ethnicity)
+            InfoRow(label: "Position", value: position)
+            InfoRow(label: "Company", value: company)
+            InfoRow(label: "Industry", value: industry)
+            InfoRow(label: "Experience", value: experienceYears.map { "\($0) years" })
         }
     }
 
@@ -356,6 +361,26 @@ private struct BasicsGrid: View {
             .font(.subheadline)
             .padding(.vertical, 6)
             .overlay(Divider().background(p.divider), alignment: .bottom)
+        }
+    }
+}
+
+// MARK: - Education list
+private extension ProfileDetailView {
+    var educationList: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(vm.profile.education) { e in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(e.institution).styled(.body)
+                    HStack(spacing: 6) {
+                        if let degree = e.degree { Text(degree).styled(.caption, color: p.textSecondary) }
+                        Spacer()
+                        if let start = e.startYear, let end = e.endYear { Text("· \(start)-\(end)").styled(.caption, color: p.textSecondary) }
+                    }
+                }
+                .padding(.vertical, 4)
+                .overlay(Divider().background(p.divider), alignment: .bottom)
+            }
         }
     }
 }
