@@ -41,7 +41,6 @@ struct ProfileDetailView: View {
                 }
             }
         }
-        .overlay(alignment: .bottom) { if !vm.isLoading && vm.errorMessage == nil { actionBar } }
         .navigationBarTitleDisplayMode(.inline)
         .task { await vm.loadOtherUserProfile(userID: userID) }
     }
@@ -49,27 +48,25 @@ struct ProfileDetailView: View {
     // MARK: - Content
     private var content: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Hero
-                HeaderHero(imageURL: vm.profile.avatarURL)
+            VStack(alignment: .leading, spacing: AppTheme.Space.lg) {
+                hero
 
-                // Header card (name / headline / location / menu)
-                headerIdentity
+                header
 
                 Divider().background(p.divider)
 
                 // About
-                section(title: "About") { aboutSection }
+                section(title: "About Me") { ExpandableText(vm.profile.bio) }
 
                 // Connections row
                 if !vm.profile.connections.isEmpty {
-                    section(title: "Connections") {
+                    section(title: "My Connections") {
                         ConnectionsRow(connections: vm.profile.connections)
                     }
                 }
 
                 // Career basics
-                section(title: "Career") {
+                section(title: "My Career Details") {
                     CareerGrid(
                         position: vm.profile.currentPosition,
                         company: vm.profile.company,
@@ -80,26 +77,29 @@ struct ProfileDetailView: View {
 
                 // Skills
                 if !vm.profile.skills.isEmpty {
-                    section(title: "Skills") { wrapChips(vm.profile.skills) }
+                    section(title: "My Skills") { wrapChips(vm.profile.skills) }
                 }
 
                 // Interests
                 if !vm.profile.interests.isEmpty {
-                    section(title: "Interests") { wrapChips(vm.profile.interests) }
+                    section(title: "My Interests") { wrapChips(vm.profile.interests) }
                 }
 
                 // Open To
                 if !vm.profile.openTo.isEmpty {
-                    section(title: "Open to") { wrapChips(vm.profile.openTo.map { $0.rawValue.capitalized }) }
+                    section(title: "I'm Open to") { wrapChips(vm.profile.openTo.map { $0.rawValue.capitalized }) }
                 }
 
                 // Education
                 if !vm.profile.education.isEmpty {
-                    section(title: "Education") { educationList }
+                    section(title: "My Education") { educationList }
                 }
 
                 Spacer(minLength: 88) // for bottom bar spacing
             }
+            .padding(.horizontal, AppTheme.Space.lg)
+            .padding(.top, AppTheme.Space.lg)
+            .padding(.bottom, AppTheme.Space.lg)
         }
     }
 
@@ -162,50 +162,42 @@ struct ProfileDetailView: View {
         .padding(.bottom, -96)
     }
 
-    // About measurement state
-    @State private var fullBioHeight: CGFloat = 0
-    @State private var limitedBioHeight: CGFloat = 0
-    private let bioLineLimit: Int = 3
-    @State private var showMoreAbout = false
+    // MARK: - Sections
+    private var hero: some View {
+        ZStack(alignment: .bottom) {
+            ImageLoader(url: vm.profile.avatarURL, contentMode: .fill, cornerRadius: 12)
+            LinearGradient(colors: [Color.black.opacity(0.5), .clear], startPoint: .bottom, endPoint: .top)
+                .frame(height: 120)
+        }
+        .frame(height: 320)
+        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg))
+    }
 
-    private var aboutSection: some View {
+    private var header: some View {
         VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            Text(vm.profile.bio)
-                .styled(.body, color: p.textSecondary)
-                .lineLimit(showMoreAbout ? nil : bioLineLimit)
-                .background(
-                    // Measure limited height (3 lines) using an invisible twin
-                    Text(vm.profile.bio)
-                        .styled(.body, color: p.textSecondary)
-                        .lineLimit(bioLineLimit)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .background(GeometryReader { geo in
-                            Color.clear.preference(key: LimitedTextHeightKey.self, value: geo.size.height)
-                        })
-                        .hidden()
-                )
-                .overlay(
-                    // Measure full height (no limit) using another invisible twin
-                    Text(vm.profile.bio)
-                        .styled(.body, color: p.textSecondary)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .background(GeometryReader { geo in
-                            Color.clear.preference(key: FullTextHeightKey.self, value: geo.size.height)
-                        })
-                        .hidden()
-                )
-                .onPreferenceChange(LimitedTextHeightKey.self) { limitedBioHeight = $0 }
-                .onPreferenceChange(FullTextHeightKey.self) { fullBioHeight = $0 }
-
-            if fullBioHeight > (limitedBioHeight + 1) { // show toggle only when truncated
-                Button(action: { withAnimation(.easeInOut) { showMoreAbout.toggle() } }) {
-                    Text(showMoreAbout ? "Show less" : "Show more")
-                        .styled(.caption, color: p.primary)
+            Text(vm.profile.fullName)
+                .font(.title2.weight(.semibold))
+                .foregroundColor(p.secondary)
+            if !vm.profile.headline.isEmpty {
+                Text(vm.profile.headline)
+                    .styled(.body, color: p.textSecondary)
+            }
+            HStack(spacing: AppTheme.Space.sm) {
+                if let city = vm.profile.city, let country = vm.profile.country {
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin.and.ellipse")
+                        Text("\(city), \(country)")
+                    }
+                    .styled(.caption, color: p.textSecondary)
+                }
+                if vm.profile.isVerified {
+                    ChipView(text: "Verified", background: p.success.opacity(0.9), textColor: .white)
                 }
             }
         }
     }
+
 
     private func wrapChips(_ items: [String]) -> some View {
         FlexibleChips(items: items)
@@ -216,51 +208,7 @@ struct ProfileDetailView: View {
             Text(title).font(.headline).foregroundColor(p.textPrimary)
             content()
         }
-        .padding(.horizontal)
-        .padding(.vertical, 14)
         .background(p.bg.opacity(0.001)) // list-friendly tap area
-    }
-
-    private var actionBar: some View {
-        HStack(spacing: 16) {
-            Button {
-                // dislike / pass
-            } label: {
-                Image(systemName: "person.badge.minus")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(p.alert)
-                    .frame(width: 54, height: 54)
-                    .background(p.card)
-                    .clipShape(Circle())
-                    .shadow(radius: 4, y: 2)
-            }
-
-            Button {
-                // like
-            } label: {
-                Image(systemName: "person.crop.circle.badge.plus")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 64, height: 64)
-                    .background(p.primary)
-                    .clipShape(Circle())
-                    .shadow(radius: 6, y: 3)
-            }
-
-            Button {
-                // message
-            } label: {
-                Image(systemName: "paperplane.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 54, height: 54)
-                    .background(p.info)
-                    .clipShape(Circle())
-                    .shadow(radius: 4, y: 2)
-            }
-        }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 20)
     }
 }
 
