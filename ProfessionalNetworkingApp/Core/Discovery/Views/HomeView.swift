@@ -4,13 +4,13 @@ import SwiftUI
 
 struct HomeView: View {
     @Environment(\.appPalette) private var p
-    @State private var viewModel = DiscoveryViewModel()
+    @State private var viewModel = DiscoveryViewModel(isCircular: false, dailyFreeLimit: nil)
 
     var body: some View {
         ThemedScreen(usePadding: false, background: .gradient) {
             VStack(spacing: 0) {
                 header
-                SwipeView(viewModel: $viewModel)
+                SwipeView(viewModel: viewModel)
                 Spacer(minLength: 0)
             }
         }
@@ -18,7 +18,6 @@ struct HomeView: View {
 
     private var header: some View {
         HStack {
-            // Reload button (top-left), like screenshot
             Button(action: { withAnimation(.spring()) { viewModel.reload() } }) {
                 ZStack {
                     Circle().fill(.ultraThinMaterial).frame(width: 36, height: 36)

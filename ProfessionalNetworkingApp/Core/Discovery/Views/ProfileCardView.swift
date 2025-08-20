@@ -15,19 +15,15 @@ struct ProfileCardView: View {
                 .shadow(color: p.textPrimary.opacity(0.12), radius: 8, y: 6)
 
             footer
-                .padding(AppTheme.Space.md)
+                .padding(AppTheme.Space.xs)
         }
         .frame(maxWidth: .infinity, minHeight: 420)
     }
 
     private var photo: some View {
         Group {
-            if let url = card.imageURL {
-                ImageLoader(
-                    url: url,
-                    contentMode: .fill,
-                    cornerRadius: 12
-                )
+            if let url = card.avatarURL {
+                ImageLoader(url: url, contentMode: .fill)
             } else {
                 ZStack {
                     p.bgAlt
@@ -41,17 +37,26 @@ struct ProfileCardView: View {
     }
 
     private var footer: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Space.sm) {
-            HStack(spacing: AppTheme.Space.sm) {
-                Text(card.name).font(.title3.weight(.semibold)).foregroundColor(p.secondary)
-                Text("\(card.age)").font(.headline).foregroundColor(p.secondary)
+        VStack(alignment: .leading, spacing: AppTheme.Space.xs) {
+            Text(card.fullName)
+                .font(.title3.weight(.semibold))
+                .foregroundColor(p.secondary)
+            if !card.headline.isEmpty {
+                Text(card.headline).styled(.caption, color: p.secondary.opacity(0.9))
             }
-            HStack(spacing: AppTheme.Space.sm) {
-                ChipView(text: card.tag, background: p.card, textColor: p.secondary)
-                Text(card.location).styled(.caption, color: p.secondary.opacity(0.9))
+            HStack(spacing: AppTheme.Space.xs) {
+                if let tag = card.industry ?? card.skills.first {
+                    ChipView(text: tag, outline: true)
+                        .styled(.caption)
+                }
+                if let city = card.city, let country = card.country {
+                    Text("\(city), \(country)")
+                        .styled(.caption2, color: p.secondary.opacity(0.9))
+                }
                 Spacer()
             }
         }
+        .shadow(color: .black.opacity(0.7), radius: 6, y: 3)
         .padding(AppTheme.Space.md)
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -75,20 +80,22 @@ struct ProfileCardView: View {
 
 #Preview {
     ProfileCardView(card: UserCard(
-        name: "Herman West",
-        age: 20,
-        location: "Seattle, USA",
-        tag: "Versatile",
-        imageURL: URL(string: "https://i.pravatar.cc/500?img=1"),
-        photos: [],
-        bio: "Sample bio",
-        heightCM: 172,
-        weightKG: 75,
-        relationshipStatus: "Single",
-        ethnicity: "Asian",
-        interests: ["Music"],
-        lookingFor: ["Friend"],
-        friends: []
+        fullName: "Sophia Martinez",
+        headline: "iOS Developer @ Beyond ITL",
+        bio: "Passionate about SwiftUI.",
+        avatarURL: URL(string: "https://i.pravatar.cc/500?img=1"),
+        isVerified: true,
+        city: "Kuala Lumpur",
+        country: "Malaysia",
+        currentPosition: "iOS Developer",
+        company: "Beyond ITL",
+        industry: "IT",
+        experienceYears: 4,
+        education: [],
+        skills: ["Swift", "SwiftUI"],
+        interests: ["AI"],
+        openTo: [.collaboration],
+        connections: []
     ))
-        .appTheme()
+    .appTheme()
 }

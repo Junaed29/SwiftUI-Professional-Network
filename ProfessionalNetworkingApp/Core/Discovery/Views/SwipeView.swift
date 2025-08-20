@@ -4,34 +4,41 @@ import SwiftUI
 
 struct SwipeView: View {
     @Environment(\.appPalette) private var p
-    @Binding var viewModel : DiscoveryViewModel
+    @ObservedObject var viewModel: DiscoveryViewModel
 
     // Gesture state for the top card
     @State private var dragOffset: CGSize = .zero
     private let threshold: CGFloat = 120
 
+    // Navigation state
+    @State private var selectedProfile: UserCard? = nil
+    @State private var showDetail: Bool = false
+
     var body: some View {
         VStack(spacing: 0) {
+            ZStack(alignment: .topLeading) {
+                if gateActive {
+                    gateView
+                        .padding(.horizontal, AppTheme.Space.lg)
+                        .padding(.top, AppTheme.Space.lg)
+                } else {
+                    deck
+                        .padding(.horizontal, AppTheme.Space.lg)
+                        .padding(.top, AppTheme.Space.lg)
+                }
+            }
+            // Modern navigation API
+            .navigationDestination(isPresented: $showDetail) {
+                Group {
+                    if let profile = selectedProfile { UserDetailView(profile: profile) } else { EmptyView() }
+                }
+            }
 
             Spacer(minLength: AppTheme.Space.xl)
 
-            deck
-                .padding(.horizontal, AppTheme.Space.sm)
-                .padding(.top, AppTheme.Space.lg)
-
-
-            Spacer(minLength: AppTheme.Space.xl)
-
-            // Bottom controls (optional, helpful for testing)
+            // Bottom controls
             HStack(spacing: AppTheme.Space.lg) {
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        dragOffset = CGSize(width: -threshold * 1.2, height: 0)
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.spring()) { completeSwipe(.pass) }
-                    }
-                } label: {
+                Button { animatePass() } label: {
                     Image(systemName: "xmark").font(.title2.weight(.bold))
                         .foregroundColor(p.alert)
                         .frame(width: 56, height: 56)
@@ -39,15 +46,7 @@ struct SwipeView: View {
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
                 }
-
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        dragOffset = CGSize(width: threshold * 1.2, height: 0)
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        withAnimation(.spring()) { completeSwipe(.like) }
-                    }
-                } label: {
+                Button { animateLike() } label: {
                     Image(systemName: "heart.fill").font(.title2.weight(.bold))
                         .foregroundColor(p.secondary)
                         .frame(width: 56, height: 56)
@@ -56,8 +55,46 @@ struct SwipeView: View {
                         .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
                 }
             }
-            .hidden()
-            .padding(.bottom, AppTheme.Space.xl)
+            .padding(.bottom, AppTheme.Space.sm)
+            .disabled(gateActive)
+        }
+    }
+
+    private var gateActive: Bool {
+        viewModel.reachedDailyLimit || (!viewModel.isCircular && viewModel.cards.isEmpty)
+    }
+
+    private var gateView: some View {
+        VStack(spacing: AppTheme.Space.lg) {
+            ThemedCard(style: .elevated) {
+                VStack(spacing: AppTheme.Space.md) {
+                    Image(systemName: viewModel.reachedDailyLimit ? "lock.fill" : "clock.fill")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(p.primary)
+                    Text(viewModel.reachedDailyLimit ? "You're out of free profile views" : "No more profiles")
+                        .styled(.title3)
+                        .multilineTextAlignment(.center)
+                    Text(viewModel.reachedDailyLimit ? "Come back tomorrow for more, or subscribe to unlock unlimited swipes." : "Check back later or reload to start over.")
+                        .styled(.body, color: p.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, AppTheme.Space.lg)
+                    if let limit = viewModel.dailyFreeLimit {
+                        let remaining = max(0, limit - viewModel.swipesToday)
+                        if remaining == 0 {
+                            Text("Daily limit reached").styled(.caption2, color: p.textSecondary)
+                        } else {
+                            Text("\(remaining) views left today").styled(.caption2, color: p.textSecondary)
+                        }
+                    }
+                    HStack(spacing: AppTheme.Space.md) {
+                        Button("Reload") { withAnimation(.spring()) { viewModel.reload() } }
+                            .buttonStyle(OutlineButtonStyle())
+                        Button("Get Premium") { /* TODO: present paywall */ }
+                            .buttonStyle(PrimaryButtonStyle())
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 420)
         }
     }
 
@@ -81,12 +118,22 @@ struct SwipeView: View {
                         .shadow(color: .black.opacity(isTop ? 0.2 : 0.08), radius: isTop ? 12 : 6, y: 4)
                         .gesture(isTop ? dragGesture : nil)
                         .overlay(alignment: .center) { likePassOverlay(opacity: overlayOpacity()) }
+                        .onTapGesture { if isTop { selectedProfile = card; showDetail = true } }
                         .animation(.spring(), value: viewModel.cards)
                         .animation(.spring(), value: dragOffset)
                 }
             }
         }
-        .frame(maxWidth: .infinity, minHeight: 480)
+        .frame(maxWidth: .infinity, minHeight: 480, maxHeight: 560)
+    }
+
+    private func animatePass() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { dragOffset = CGSize(width: -threshold * 1.2, height: 0) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { withAnimation(.spring()) { completeSwipe(.pass) } }
+    }
+    private func animateLike() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { dragOffset = CGSize(width: threshold * 1.2, height: 0) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { withAnimation(.spring()) { completeSwipe(.like) } }
     }
 
     private func scale(for index: Int) -> CGFloat {
@@ -140,6 +187,6 @@ struct SwipeView: View {
 }
 
 #Preview {
-    SwipeView(viewModel: .constant(DiscoveryViewModel()))
+    SwipeView(viewModel: DiscoveryViewModel())
         .appTheme()
 }
